@@ -11,7 +11,7 @@ This program reads a racetrack from a text file into a 2D character array and co
 Weights follow the rules:
 • Walls (X) are assigned 9999
 • Finish (F) is assigned 0
-• All reachable T tiles get the minimum number of steps from any F, measured in 8 directions (N, NE, E, SE, S, SW, W, NW).
+• All reachable (T) tiles get the minimum number of steps from any (F), measured in 8 directions (N, NE, E, SE, S, SW, W, NW) using BFS.
 
 Key Files
 • Racetrack.java (provided in course materials; I used displayBanner())
@@ -19,24 +19,24 @@ Key Files
 • track1.txt, track2.txt (input data)
 
 How It Works
-1. File I/O (Chapter 4/5): RacetrackDriver reads each line of the input text file, validates rectangular shape, and stores it as a char[][].
-2. Data Representation (Ch. 2 & 3 concepts in practice): The racetrack is modeled as a 2D array of chars; weights as a 2D array of ints.
-3. Algorithm (Ch. 5/7 problem solving): I compute weights using a multi-source breadth-first search (BFS). I first enqueue all finish tiles (weight 0). Then, I expand level by level to all 8 neighbors, assigning each previously-unvisited T the parent’s weight + 1. This exactly matches the “Adding 1’s, then 2’s…” example.
+1. File I/O: RacetrackDriver reads each line of the input text file, validates a rectangular shape, and stores it as a char[][].
+2. Data Representation: The racetrack is modeled as a 2D array of chars; weights as a 2D array of ints.
+3. Algorithm: I compute weights using a breadth-first search (BFS). I first enqueue all finish tiles (weight 0). Then, I expand level by level to all 8 neighbors, assigning each previously-unvisited T the parent’s weight + 1. This exactly matches the “Adding 1’s, then 2’s…” example.
 4. Edge Cases:
-   • Multiple finishes (track2.txt has “FFF”): BFS naturally supports this by seeding the queue with every F.
+   • Multiple finishes (track2.txt has “FFF”): BFS supports this by seeding the queue with every F.
    • Walls: set to 9999 and never enqueued.
    • Enclosure/Blocked regions: remain -1 if unreachable from any F (none present in the supplied sample tracks).
-5. Output: The program prints dimensions, the raw track, and the weights matrix.
+5. Output: The program prints dimensions, the raw track, and the weight matrix.
 
-Why 8-Direction BFS?
+Why did I use 8-Direction BFS?
 The assignment’s example shows all eight neighbors around 0 labeled 1, so diagonal adjacency counts. BFS in 8 directions ensures each cell receives the shortest step count under that adjacency rule.
 
-Topics from Unit 1 (Ch. 1–5, 7)
-• Variables & Types (Ch. 1–2): char for track, int for weights, constants for WALL (9999) and FINISH (0)
-• Control Flow & Loops (Ch. 3): for-loops iterate rows/cols; while loop processes the BFS queue
-• Arrays (Ch. 4): 2D arrays store track and weights
-• Methods (Ch. 5): helper methods for loading, printing, bounds checking, and BFS
-• Problem Solving / Algorithm Design (Ch. 7): Decomposed into input, processing (BFS), and output; designed for clarity and correctness
+Topics used:
+• Variables & Types: char for track, int for weights, constants for WALL (9999) and FINISH (0)
+• Control Flow & Loops: for-loops iterate rows/cols; while loop processes the BFS queue
+• Arrays: 2D arrays store track and weights
+• Methods: helper methods for loading, printing, bounds checking, and BFS
+• Problem Solving / Algorithm Design: Decomposed into input, processing (BFS), and output; designed for clarity and correctness
 
 Testing & Results
 I tested with:
@@ -45,12 +45,12 @@ I tested with:
 The program outputs correct dimensions and a weights grid that increases outward from the nearest finish while leaving walls as 9999.
 
 What I Enjoyed
-Designing the BFS and seeing the weights propagate outward in neat layers was satisfying. Reading and validating the file format was straightforward and reinforced good input-handling habits.
+Learning about and designing the BFS and seeing the weights propagate outward in layers was satisfying. Reading and validating the file format was straightforward and reinforced good input-handling habits.
 
 Challenges
 The provided Racetrack class did not expose a direct file-loading API or a getTrack() that returns the entire 2D array, so I kept the loader self-contained in the driver. The BFS must include diagonals to match the example; using only 4-direction adjacency would not match the rubric’s sample.
+Finding a variable for everything proved to be annoying as I like to name things based on what they are instead of using single characters.
 
-Future Improvements
-• Add a Racetrack.fromFile(String) to encapsulate file parsing inside Racetrack.java.
+Future Improvements:
 • Format weights with column alignment for prettier grids.
-• Add optional visualization or save the weights to an output file.
+
