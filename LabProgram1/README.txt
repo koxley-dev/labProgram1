@@ -15,6 +15,7 @@ Run:
 1. Unzip file and open the folder utilizing IntelliJ.
 2. Open Racetrack.java (main class).
 3. Run program (press green play button).
-4. Follow outputs to verify track weights.
+4. Select track.txt file to load.
+5. Follow outputs to verify track weights.
 
 IDE: IntelliJ Community Edition
