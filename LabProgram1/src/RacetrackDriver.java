@@ -21,19 +21,16 @@ public class RacetrackDriver {
 
     public static void main(String[] args) {
         try {
+            // Display banner from Racetrack.java
+            Racetrack racetrack = new Racetrack();
+            racetrack.displayBanner();
+            // Determine track .txt file
             String filename = (args.length > 0) ? args[0] : promptForPath();
-
-            // Optional: use the provided Racetrack just for the banner (still "using" the class)
-            try {
-                Racetrack r = new Racetrack();  // default no-arg is fine
-                r.displayBanner();
-            } catch (Throwable ignored) {
-                // If your Racetrack has no default ctor, just skip the banner.
-            }
-
+            // Load track selected
             char[][] track = loadTrackFromFile(filename);
+            // Build weights
             int[][] weights = buildWeights(track);
-
+            // Display output
             System.out.println("=== Grid Racers! ===");
             System.out.println("File: " + filename);
             System.out.println("Dimensions: " + track.length + " x " + (track.length == 0 ? 0 : track[0].length));
@@ -55,17 +52,14 @@ public class RacetrackDriver {
         }
     }
 
-    /**
-     * Read the text file into a rectangular char matrix.
-     * Accepts 'T', 'X', 'F' (and tolerates spaces).
-     */
+    // Read a rectangular track text file into a 2D char array.
     private static char[][] loadTrackFromFile(String filename) throws IOException {
         ArrayList<char[]> rows = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
             String line;
             int width = -1;
             while ((line = br.readLine()) != null) {
-                line = line.replace(" ", ""); // ignore embedded spaces if any
+                line = line.replace(" ", ""); // ignore any spaces
                 if (line.isEmpty()) continue;
                 if (width == -1) width = line.length();
                 if (line.length() != width) {
@@ -79,19 +73,14 @@ public class RacetrackDriver {
         return grid;
     }
 
-    /**
-     * Multi-source BFS in 8 directions.
-     *  - 'X' => 9999
-     *  - 'F' => 0 (sources)
-     *  - 'T' => shortest 8-neighbor distance to any 'F'
-     */
+    // Compute weights; Walls 'X' > 9999; Finish 'F' > 0; Open track 'T' > distance from the nearest 'F' (8-direction breadth-first search)
     private static int[][] buildWeights(char[][] track) {
         int r = track.length;
         int c = (r == 0) ? 0 : track[0].length;
         int[][] w = new int[r][c];
         ArrayDeque<int[]> q = new ArrayDeque<>();
 
-        // init queue and base weights
+        // initialize queue and base weights
         for (int i = 0; i < r; i++) {
             for (int j = 0; j < c; j++) {
                 char cell = track[i][j];
@@ -106,7 +95,7 @@ public class RacetrackDriver {
             }
         }
 
-        // BFS
+        // Breadth-first search
         while (!q.isEmpty()) {
             int[] cur = q.removeFirst();
             int cr = cur[0], cc = cur[1];
@@ -146,9 +135,8 @@ public class RacetrackDriver {
     }
 
     private static String promptForPath() throws IOException {
-        System.out.print("Enter track filename (e.g., track1.txt): ");
+        System.out.print("Enter track filename (e.g., track1.txt, track2.txt): ");
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         return br.readLine().trim();
     }
 }
-
