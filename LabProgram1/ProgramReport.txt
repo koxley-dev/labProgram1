@@ -1,56 +1,57 @@
-CSC 223 — Program 1: Grid Racers
+CSC 223 — Program 2: Grid Racers
 Author: Kryssa Oxley
-Date: 12 Oct 2025
+Date: 03 Nov 2025
 
 Overview
-This program reads a racetrack from a text file into a 2D character array and computes a parallel 2D weights array that represents the distance from the finish line. The track uses:
-• T = open track tile
-• X = wall
-• F = finish line
+This program builds on Program 1 by introducing cars that race across a weighted racetrack toward the finish line.
+Each car’s movement depends on its velocity, which increases after every move, simulating acceleration on the grid.
+The race runs in rounds, updating the racetrack and displaying car statistics until a car reaches the finish.
 
-Weights follow the rules:
-• Walls (X) are assigned 9999
-• Finish (F) is assigned 0
-• All reachable (T) tiles get the minimum number of steps from any (F), measured in 8 directions (N, NE, E, SE, S, SW, W, NW) using BFS.
+Specifications Completed
+• Cars start at the highest weights available:
+  The program scans the racetrack’s 2D weights array to locate all cells with the maximum weight and places one car per cell.
+• Cars move to the lowest weight in range:
+  For each round, a car examines all reachable cells within its velocity rectangle (±rowVel, ±colVel) and selects the unoccupied cell with the smallest weight.
+• Velocities increase each turn:
+  After a move, row velocity and column velocity are incremented by the number of spaces traveled vertically and horizontally.
+• Cars do not share spaces:
+  Occupancy and reservation arrays prevent cars from colliding or occupying the same cell.
+• Cars move in assigned order:
+  Car1, Car2, Car3 always move sequentially each round, following the order they were created.
+• A car wins by reaching the finish:
+  The race immediately stops when any car lands on ‘F’, prints the final grid and statistics, and announces the winner.
 
-Key Files
-• Racetrack.java (provided in course materials; I used displayBanner())
-• RacetrackDriver.java (my driver)
-• track1.txt, track2.txt (input data)
+Topics from Unit 2 (Chapters 4, 6, 8, 9)
+• Chapter 4 – Algorithm design and iteration: cars move in a deterministic loop per round.
+• Chapter 6 – 2D arrays and matrices: racetrack weights and occupancy grids.
+• Chapter 8 – Classes, objects, and encapsulation: CarAgent adapts Car.java to include runtime state (position, velocities).
+• Chapter 9 – Comparators and ordering: cars are ranked each round by weight for race placement display.
 
-How It Works
-1. File I/O: RacetrackDriver reads each line of the input text file, validates a rectangular shape, and stores it as a char[][].
-2. Data Representation: The racetrack is modeled as a 2D array of chars; weights as a 2D array of ints.
-3. Algorithm: I compute weights using a breadth-first search (BFS). I first enqueue all finish tiles (weight 0). Then, I expand level by level to all 8 neighbors, assigning each previously-unvisited T the parent’s weight + 1. This exactly matches the “Adding 1’s, then 2’s…” example.
-4. Edge Cases:
-   • Multiple finishes (track2.txt has “FFF”): BFS supports this by seeding the queue with every F.
-   • Walls: set to 9999 and never enqueued.
-   • Enclosure/Blocked regions: remain -1 if unreachable from any F (none present in the supplied sample tracks).
-5. Output: The program prints dimensions, the raw track, and the weight matrix.
+Program Design
+- Racetrack.java now encapsulates everything from Program 1’s driver, including reading the track, placing cars, and managing turns.
+- Program2.java serves as the main entry point and orchestrates the simulation.
+- CarAgent.java tracks velocity, position, and finish status for each car, leaving the provided Car.java unchanged.
 
-Why did I use 8-Direction BFS?
-The assignment’s example shows all eight neighbors around 0 labeled 1, so diagonal adjacency counts. BFS in 8 directions ensures each cell receives the shortest step count under that adjacency rule.
+Testing
+Tracks used for verification:
+1. track1.txt – Wide grid with two finish lines (FF) near the top right.
+   Verified cars start at maximum weights and navigate toward the finish in order, without overlap.
+2. track2.txt – Narrow vertical racetrack with one finish row (FFF).
+   Confirmed that acceleration and tie-breaking operate correctly in a constrained environment.
 
-Topics used:
-• Variables & Types: char for track, int for weights, constants for WALL (9999) and FINISH (0)
-• Control Flow & Loops: for-loops iterate rows/cols; while loop processes the BFS queue
-• Arrays: 2D arrays store track and weights
-• Methods: helper methods for loading, printing, bounds checking, and BFS
-• Problem Solving / Algorithm Design: Decomposed into input, processing (BFS), and output; designed for clarity and correctness
+Enjoyed
+Designing and watching the race evolve round-by-round was enjoyable, especially observing velocity growth and tie resolution.
 
-Testing & Results
-I tested with:
-• track1.txt (bordered maze with two F’s near the top-right)
-• track2.txt (thin vertical track with three F’s across the second row)
-The program outputs correct dimensions and a weights grid that increases outward from the nearest finish while leaving walls as 9999.
+Difficulties
+The most challenging part was balancing the movement range so cars progress toward the finish without skipping large sections.
+Managing grid occupancy between multiple cars required careful sequencing and debugging.
 
-What I Enjoyed
-Learning about and designing the BFS and seeing the weights propagate outward in layers was satisfying. Reading and validating the file format was straightforward and reinforced good input-handling habits.
+Future Improvements
+• Add randomized velocity increases or “boost” tiles.
+• Implement a graphical or GUI-based race viewer.
+• Allow reading car data (IDs and colors) from a separate file instead of hardcoding.
 
-Challenges
-The provided Racetrack class did not expose a direct file-loading API or a getTrack() that returns the entire 2D array, so I kept the loader self-contained in the driver. The BFS must include diagonals to match the example; using only 4-direction adjacency would not match the rubric’s sample.
-Finding a variable for everything proved to be annoying as I like to name things based on what they are instead of using single characters.
-
-Future Improvements:
-• Format weights with column alignment for prettier grids.
+GitHub Source Control
+A new pull request was created on my course repository for Program 2 submission.
+The PR includes all Java source files and the screenshot (Screenshot_of_PR.png) is attached.
 
