@@ -1,157 +1,103 @@
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-
-// Racetrack class: loads a text file track, computes weights,
-// places cars, moves them per velocity rules, and prints output.
-
 public class Racetrack {
 
+    /** Racetrack from text file (or default layout) **/
     private char[][] track;
+    /** Weights of the track position **/
     private int[][] weights;
-    private boolean[][] occupied;
-    private int rows, cols, round;
-    private int minWeight = Integer.MAX_VALUE, maxWeight = Integer.MIN_VALUE;
+    /** Constant Value for finish line weight **/
+    private final int FINISH_WEIGHT = 0;
+    /** Constant Value for wall weight **/
+    private final int WALL_WEIGHT = 9999;
+    /** Constant Value for pre-initialized track weight **/
+    private final int INIT_TRACK_WEIGHT = -1;
 
-    public Racetrack(String filename) {
-        loadTrack(filename);
-        computeWeights();
-        occupied = new boolean[rows][cols];
+    /**
+     * Default constructor.
+     * Initializes the track and weights using the built-in demo track.
+     * (This simply calls useDefaultTrack(), which was provided in the original file.)
+     */
+    public Racetrack() {
+        useDefaultTrack();
     }
 
-    public int getRound() { return round; }
-
-    // Loads track file (X walls, T open, F finish).
-    private void loadTrack(String filename) {
-        ArrayList<char[]> lines = new ArrayList<char[]>();
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(filename));
-            String line;
-            while ((line = br.readLine()) != null)
-                lines.add(line.toCharArray());
-            br.close();
-        } catch (IOException e) {
-            System.out.println("Error reading track file.");
-        }
-        rows = lines.size();
-        cols = lines.get(0).length;
-        track = new char[rows][cols];
-        for (int r = 0; r < rows; r++)
-            track[r] = lines.get(r);
+    /**
+     * @return - track character at a given position
+     */
+    public char getTrack(int row, int col) {
+        return track[row][col];
     }
 
-    // Simple weight assignment: smaller number means closer to finish.
-    private void computeWeights() {
-        weights = new int[rows][cols];
-        for (int r = 0; r < rows; r++)
-            for (int c = 0; c < cols; c++) {
-                if (track[r][c] == 'X')
-                    weights[r][c] = 9999;
-                else if (track[r][c] == 'F')
-                    weights[r][c] = 0;
-                else
-                    weights[r][c] = 1 + r + c; // placeholder pattern
-                if (weights[r][c] < minWeight) minWeight = weights[r][c];
-                if (weights[r][c] > maxWeight) maxWeight = weights[r][c];
-            }
+    /**
+     * Update position on track
+     */
+    public void setTrack(int row, int col, char value) {
+        track[row][col] = value;
     }
 
-    // Place cars on highest available weights (no duplicates).
-    public void placeCarsAtHighestWeights(List<CarAgent> cars) {
-        int placed = 0;
-        for (int r = 0; r < rows && placed < cars.size(); r++)
-            for (int c = 0; c < cols && placed < cars.size(); c++)
-                if (weights[r][c] == maxWeight && track[r][c] != 'X') {
-                    cars.get(placed).pos = new Position(r, c);
-                    occupied[r][c] = true;
-                    placed++;
-                }
+    /**
+     * Return the weight at the given (row, col).
+     * This method is required by Car.java when updating car info.
+     */
+    public int getWeight(int row, int col) {
+        return weights[row][col];
     }
 
-    // Executes race rounds until a car reaches 'F'.
-    public CarAgent runRace(List<CarAgent> cars) {
-        for (round = 1; round <= 200; round++) {
-            for (CarAgent car : cars) {
-                if (car.finished) continue;
-                Position dest = findLowestWeightInRange(car);
-                if (dest == null) continue;
-                occupied[car.pos.r][car.pos.c] = false;
-                car.velRow += Math.abs(dest.r - car.pos.r);
-                car.velCol += Math.abs(dest.c - car.pos.c);
-                car.pos = dest;
-                occupied[dest.r][dest.c] = true;
-                if (track[dest.r][dest.c] == 'F') {
-                    car.finished = true;
-                    return car;
-                }
-            }
-            displayTrack(cars);
-            displayCarInfo(cars, round);
-        }
-        return null;
+    /**
+     * @return - number of rows
+     */
+    public int height() {
+        return track.length;
     }
 
-    // Choose lowest weight cell within car's velocity range.
-    private Position findLowestWeightInRange(CarAgent car) {
-        int bestW = Integer.MAX_VALUE;
-        Position best = null;
-        for (int dr = -car.velRow; dr <= car.velRow; dr++)
-            for (int dc = -car.velCol; dc <= car.velCol; dc++) {
-                int nr = car.pos.r + dr;
-                int nc = car.pos.c + dc;
-                if (inBounds(nr, nc) && !occupied[nr][nc] && track[nr][nc] != 'X') {
-                    int w = weights[nr][nc];
-                    if (w < bestW) {
-                        bestW = w;
-                        best = new Position(nr, nc);
-                    }
-                }
-            }
-        return best;
+    /**
+     * @return - number of columns
+     */
+    public int width() {
+        return track[0].length;
     }
 
-    private boolean inBounds(int r, int c) {
-        return r >= 0 && c >= 0 && r < rows && c < cols;
+    /**
+     * Display game banner (Optional)
+     */
+    public void displayBanner() {
+        String art =
+                "   ______     _     __   ____                           \n" +
+                        "  / ____/____(_)___/ /  / __ \\____ _________  __________\n" +
+                        " / / __/ ___/ / __  /  / /_/ / __ `/ ___/ _ \\/ ___/ ___/\n" +
+                        "/ /_/ / /  / / /_/ /  / _, _/ /_/ / /__/  __/ /  (__  ) \n" +
+                        "\\____/_/  /_/\\__,_/  /_/ |_|\\__,_/\\___/\\___/_/  /____/  \n" +
+                        "                                                        ";
+
+        System.out.println(art + "\n");
     }
 
-    // Draws track with cars shown by ID, X as walls, F as finish.
-    public void displayTrack(List<CarAgent> cars) {
-        String[][] out = new String[rows][cols];
-        for (int r = 0; r < rows; r++)
-            for (int c = 0; c < cols; c++)
-                out[r][c] = String.valueOf(track[r][c]);
-        for (CarAgent car : cars)
-            out[car.pos.r][car.pos.c] = car.id;
-        for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < cols; c++)
-                System.out.print(out[r][c] + " ");
-            System.out.println();
-        }
-        System.out.println();
-    }
+    /**
+     * This method creates a track and weights using static values (For Demo Purposes only)
+     * (This is exactly the layout from your instructor's original file.)
+     */
+    public void useDefaultTrack() {
+        weights = new int[][]{
+                {WALL_WEIGHT, WALL_WEIGHT, WALL_WEIGHT, WALL_WEIGHT, WALL_WEIGHT, WALL_WEIGHT, WALL_WEIGHT, WALL_WEIGHT, WALL_WEIGHT, WALL_WEIGHT, WALL_WEIGHT},
+                {WALL_WEIGHT, 11, 11, 11, 11, 11, 11, WALL_WEIGHT, FINISH_WEIGHT, FINISH_WEIGHT, WALL_WEIGHT},
+                {WALL_WEIGHT, 10, 10, 10, 10, 10, 11, WALL_WEIGHT, 1, 1, WALL_WEIGHT},
+                {WALL_WEIGHT, 10, 9, 9, 9, 10, WALL_WEIGHT, WALL_WEIGHT, 2, 2, WALL_WEIGHT},
+                {WALL_WEIGHT, 10, 9, 8, WALL_WEIGHT, WALL_WEIGHT, WALL_WEIGHT, WALL_WEIGHT, 3, 3, WALL_WEIGHT},
+                {WALL_WEIGHT, 10, 9, 8, 7, 6, 5, 4, 4, 4, WALL_WEIGHT},
+                {WALL_WEIGHT, 10, 9, 8, 7, 6, 5, 5, 5, 5, WALL_WEIGHT},
+                {WALL_WEIGHT, 10, 9, 8, 7, 6, 6, 6, 6, 6, WALL_WEIGHT},
+                {WALL_WEIGHT, WALL_WEIGHT, WALL_WEIGHT, WALL_WEIGHT, WALL_WEIGHT, WALL_WEIGHT, WALL_WEIGHT, WALL_WEIGHT, WALL_WEIGHT, WALL_WEIGHT, WALL_WEIGHT}
+        };
 
-    // Prints car stats and place based on current weight.
-    public void displayCarInfo(List<CarAgent> cars, int roundNum) {
-        System.out.println("Cars Information (Round " + roundNum + "):");
-        List<CarAgent> sorted = new ArrayList<CarAgent>(cars);
-        sorted.sort(Comparator.comparingInt(a -> weights[a.pos.r][a.pos.c]));
-        int place = 1;
-        for (CarAgent car : sorted) {
-            System.out.printf("%d) %-5s pos=(%d,%d) rowVel=%d colVel=%d weight=%d %s%n",
-                    place++, car.id, car.pos.r, car.pos.c,
-                    car.velRow, car.velCol,
-                    weights[car.pos.r][car.pos.c],
-                    car.finished ? "[FINISHED]" : "");
-        }
-        System.out.println();
-    }
-
-    public void displayBanner(String title) {
-        System.out.println("\n==============================");
-        System.out.println(" " + title);
-        System.out.println("==============================\n");
+        track = new char[][]{
+                {'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X'},
+                {'X', 'T', 'T', 'T', 'T', 'T', 'T', 'X', 'F', 'F', 'X'},
+                {'X', 'T', 'T', 'T', 'T', 'T', 'T', 'X', 'T', 'T', 'X'},
+                {'X', 'T', 'T', 'T', 'T', 'T', 'X', 'X', 'T', 'T', 'X'},
+                {'X', 'T', 'T', 'T', 'X', 'X', 'X', 'X', 'T', 'T', 'X'},
+                {'X', 'T', 'T', 'T', 'T', 'T', 'T', 'T', 'T', 'T', 'X'},
+                {'X', 'T', 'T', 'T', 'T', 'T', 'T', 'T', 'T', 'T', 'X'},
+                {'X', 'T', 'T', 'T', 'T', 'T', 'T', 'T', 'T', 'T', 'X'},
+                {'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X', 'X'},
+        };
     }
 }
