@@ -1,43 +1,41 @@
-Name: Lab Program 2 (Grid Racers)
+Name: Lab Program 3 (Grid Racers – Collisions & Paths)
 Author: Kryssa Oxley
-Date: 05 NOV 2025
 Course: CSC 223 – Data Structures
+Date: 07 Dec 2025
 
 Files:
-    - Program2.java
-    - Racetrack.java
-    - CarAgent.java
-    - Position.java
-    - Car.java       (provided)
-    - track1.txt
-    - track2.txt
-    - ProgramReport.txt
-    - Screenshot_of_PR.png
+    - Program3.java          (main driver for this assignment)
+    - Racetrack.java         (provided, with getWeight() and default track)
+    - Car.java               (provided, abstract base class)
+    - Position.java          (simple coordinate class used for paths)
+    - UserCar.java           (extends Car)
+    - SportsCar.java         (extends Car)
+    - AgileCar.java          (extends Car)
+    - track1.txt             (original track file from earlier lab)
+    - track2.txt             (original track file from earlier lab)
+    - ProgramReport.txt      (program report for this assignment)
+    - Screenshot_of_PR.png   (GitHub pull request screenshot)
 
-Run:
+How to Run:
 1. Unzip the folder and open it in IntelliJ Community Edition.
-2. Open Program2.java (the main class).
-3. Press the green Run button.
-4. The program will automatically load track1.txt and place three cars (Car1, Car2, Car3) on the racetrack.
-5. Watch the console output:
-       • “Cars Start Race” banner
-       • Initial racetrack display (X = wall, F = finish)
-       • Cars moving each round based on their velocities
-       • Car statistics after every round (position, row velocity, column velocity, weight)
-6. The race ends when a car reaches the finish (F).  The winner is displayed.
+2. Make sure all .java files are in the same src package or default package.
+3. Open Program3.java.
+4. Click the green Run button.
+5. The program will:
+       - Display the Grid Racers banner.
+       - Initialize the default racetrack from Racetrack.useDefaultTrack().
+       - Create three cars: UserCar, SportsCar, AgileCar.
+       - Place the cars on starting positions.
+       - Run rounds of movement until a winner is found or the maximum
+         number of rounds is reached.
+       - Print the racetrack after each round.
+       - At the end, highlight the winning car's path with '*' and show
+         the winner's final position with its car ID.
 
-Program Description:
-Grid Racers extends Program 1 by animating cars on the weighted racetrack created from BFS calculations.
-Each car begins on the highest available weight and moves each round toward the lowest weight within its velocity range.
-Velocities grow with every move according to vertical and horizontal distance traveled.
-Cars take turns in fixed order (Car1, Car2, Car3), cannot share cells, and the first to land on 'F' wins.
-
-Key Features:
-• Uses provided Car.java and Racetrack class
-• Incorporates movement logic with variable velocity
-• Displays racetrack and car data after each round
-• Ends automatically when a car finishes
-• Compatible with Program 1 track files (track1.txt, track2.txt)
-
-IDE: IntelliJ Community Edition
-GitHub: Pull request screenshot included (Screenshot_of_PR.png)
+Notes:
+- The program uses the provided Racetrack and Car classes and a Position class.
+- Collisions with walls and other cars cause the moving car to stay at its previous
+  position and call carCollision(), which reduces max speed and resets velocities.
+- Reaching the finish line sets the car's winner flag and ends the race.
+- track1.txt and track2.txt are included as original assets from a previous lab,
+  but this version uses the Racetrack's built-in default track.

@@ -1,8 +1,26 @@
-// Simple coordinate class.
+// Position class
+// Stores a row and column on the racetrack.
+
 public class Position {
-    public int r, c;
-    public Position(int r, int c) {
-        this.r = r;
-        this.c = c;
+
+    private int row;
+    private int col;
+
+    public Position(int row, int col) {
+        this.row = row;
+        this.col = col;
+    }
+
+    public int getRow() {
+        return row;
+    }
+
+    public int getCol() {
+        return col;
+    }
+
+    @Override
+    public String toString() {
+        return "(" + row + "," + col + ")";
     }
 }

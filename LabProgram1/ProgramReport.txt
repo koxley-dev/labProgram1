@@ -1,56 +1,130 @@
-CSC 223 — Program 2: Grid Racers
+Name: Lab Program 3 (Grid Racers – Collisions & Paths)
 Author: Kryssa Oxley
-Date: 05 NOV 2025
+Course: CSC 223 – Data Structures
+Date: 07 Dec 2025
 
-Overview
-This program builds on Program 1 by introducing cars that race across a weighted racetrack toward the finish line.
-Each car’s movement depends on its velocity, which increases after every move, simulating acceleration on the grid.
-The race runs in rounds, updating the racetrack and displaying car statistics until a car reaches the finish.
+This program expands on the earlier Grid Racers concept by introducing multiple car types, collision detection, and path visualization. Three cars (UserCar, SportsCar, AgileCar) race across a grid-based racetrack toward the finish line. The program uses the provided Racetrack and Car classes along with a Position class to track each car’s movement.
+* Due to the inability for Program2 driver to run, I had to completely rebuild the majority of the file in the src folder.
 
-Specifications Completed
-• Cars start at the highest weights available:
-  The program scans the racetrack’s 2D weights array to locate all cells with the maximum weight and places one car per cell.
-• Cars move to the lowest weight in range:
-  For each round, a car examines all reachable cells within its velocity rectangle (±rowVel, ±colVel) and selects the unoccupied cell with the smallest weight.
-• Velocities increase each turn:
-  After a move, row velocity and column velocity are incremented by the number of spaces traveled vertically and horizontally.
-• Cars do not share spaces:
-  Occupancy and reservation arrays prevent cars from colliding or occupying the same cell.
-• Cars move in assigned order:
-  Car1, Car2, Car3 always move sequentially each round, following the order they were created.
-• A car wins by reaching the finish:
-  The race immediately stops when any car lands on ‘F’, prints the final grid and statistics, and announces the winner.
+How specifications were completed:
 
-Topics from Unit 2 (Chapters 4, 6, 8, 9)
-• Chapter 4 – Algorithm design and iteration: cars move in a deterministic loop per round.
-• Chapter 6 – 2D arrays and matrices: racetrack weights and occupancy grids.
-• Chapter 8 – Classes, objects, and encapsulation: CarAgent adapts Car.java to include runtime state (position, velocities).
-• Chapter 9 – Comparators and ordering: cars are ranked each round by weight for race placement display.
+1. Collision detection is added to each car type checking for walls, cars, and finish line.
+   Each Car subclass implements the abstract move(Racetrack track) method. In move(), the car decides a target row and column based on its behavior. Before moving, it checks the destination cell using track.getTrack(row, col):
+   - If the destination is 'X', the car has collided with a wall. The method calls carCollision() and the car does not call updateCarInfo(), so it stays at its previous position.
+   - If the destination contains another car’s ID character (any non-wall, non-track tile that is not 'F'), the method treats this as a collision with another car. Again, carCollision() is called and the car does not move.
+   - If the destination is 'F', the car moves onto the finish line, calls updateCarInfo(), and sets its winner flag to true. This ends the race.
 
-Program Design
-- Racetrack.java now encapsulates everything from Program 1’s driver, including reading the track, placing cars, and managing turns.
-- Program2.java serves as the main entry point and orchestrates the simulation.
-- CarAgent.java tracks velocity, position, and finish status for each car, leaving the provided Car.java unchanged.
+2. Car types are created and used with their appropriate implementations (UserCar, SportsCar, AgileCar).
+   Three subclasses extend the abstract Car class:
+   - UserCar: Moves one row upward each turn, making it a steady, predictable racer.
+   - SportsCar: Attempts to move two rows upward each turn (falling back to one row if needed), making it faster but more prone to collisions.
+   - AgileCar: Tries to navigate around obstacles by attempting diagonal moves first (up-right or up-left) and then straight up if diagonals are blocked. This makes it more flexible in tight spaces.
+   All three classes honor the Car API and use updateCarInfo() and carCollision() as appropriate.
 
-Testing
-Tracks used for verification:
-1. track1.txt – Wide grid with two finish lines (FF) near the top right.
-   Verified cars start at maximum weights and navigate toward the finish in order, without overlap.
-2. track2.txt – Narrow vertical racetrack with one finish row (FFF).
-   Confirmed that acceleration and tie-breaking operate correctly in a constrained environment.
+3. Cars land on previous position on path after a collision occurs.
+   When a collision is detected, the car does not call updateCarInfo(). The carCollision() method is invoked, which reduces maxSpeed and resets velocities to 1. Because the car’s row and column are not changed, the car effectively remains at its previous position on the racetrack. This behavior satisfies the requirement that cars land on their previous position after a collision.
 
-Enjoyed
-Designing and watching the race evolve round-by-round was enjoyable, especially observing velocity growth and tie resolution.
+4. Winning car’s path is displayed on racetrack at end of race.
+   The main driver (Program3) maintains an ArrayList<Position> for each car. After each move, if a car’s row or column changes, the new Position is added to that car’s path list. When a winner is found, Program3 constructs a copy of the racetrack and overlays the winning car’s path by marking each position with '*', leaving walls as 'X'. The winner’s final position is drawn using its car ID. This final display shows the path that the winning car took to reach the finish line.
 
-Difficulties
-The most challenging part was balancing the movement range so cars progress toward the finish without skipping large sections.
-Managing grid occupancy between multiple cars required careful sequencing and debugging.
+Topics from Unit 3 (Chapters 10–15):
 
-Future Improvements
-• Add randomized velocity increases or “boost” tiles.
-• Implement a graphical or GUI-based race viewer.
-• Allow reading car data (IDs and colors) from a separate file instead of hardcoding.
+This program demonstrates several Unit 3 concepts:
+- Inheritance and polymorphism: UserCar, SportsCar, and AgileCar all inherit from the abstract Car class and provide their own implementations of move().
+- Abstract classes: Car is an abstract class that defines common fields (ID, velocities, maxSpeed, winner flag) and declares the abstract move() method that must be implemented by each subclass.
+- Encapsulation: The Racetrack class hides its track and weight arrays behind methods like getTrack() and getWeight(), and Car hides its internal state behind getters and setters.
+- Collections: The program uses ArrayList<Position> to track the path of each car.
+- 2D arrays: The racetrack grid is a 2D array of characters, and the program iterates over this array to print the track and overlay the winning path.
 
-GitHub Source Control
-A new pull request was created on my course repository for Program 2 submission.
-The PR includes all Java source files and the screenshot (Screenshot_of_PR.png) is attached.
+Something enjoyed and difficulties:
+
+I enjoyed designing different movement behaviors for the three car types and then watching how their strategies played out during the race. Seeing the winning car’s path drawn on the racetrack at the end made the output feel more visual and game-like.
+
+One challenge was identifying that the instructor’s recommended fixes required restoring the original Racetrack interface so that Car.java could compile correctly, which meant undoing earlier modifications and re-aligning all files to the expected design.
+
+Overall Design:
+This program simulates three cars racing on a grid-based racetrack. The racetrack is represented by a 2D char array inside Racetrack, where:
+- 'X' = wall
+- 'T' = track tile
+- 'F' = finish line
+Cars are represented by their ID characters (e.g., 'U', 'S', 'A') and move one at a time based on their individual behaviors.
+
+Classes:
+
+1. Racetrack (provided)
+   - Stores the track layout in a 2D char array and a matching 2D int array of weights.
+   - useDefaultTrack() initializes a pre-defined track and weights.
+   - getTrack(row, col) returns the character at a specified position.
+   - setTrack(row, col, value) updates the track at a specified position.
+   - getWeight(row, col) returns the weight of a given cell.
+   - height() and width() return the dimensions of the grid.
+   - displayBanner() prints an ASCII art banner.
+
+2. Car (provided, abstract)
+   - Stores car state:
+       * idNumber: character ID used to draw the car on the track
+       * row, col: current coordinates
+       * rowVelocity, colVelocity: current velocities
+       * maxSpeed: maximum speed
+       * isWinner: true if the car reached the finish
+       * weightPosition: weight of the car’s current track position
+       * moveOrder: static order in which cars were created
+   - Abstract method move(Racetrack track) must be implemented by each subclass.
+   - setCarMove(Racetrack track) marks the car's current position on the track with its ID.
+   - updateCarInfo(Racetrack track, int newRow, int newCol) updates coordinates, adjusts velocities, records the new weight, changes the old position to 'T', and places the car at the new position.
+   - carCollision() lowers the car's maxSpeed (if above 1) and resets rowVelocity and colVelocity to 1, printing a collision message.
+
+3. Position
+   - A simple helper class that stores row and column integers.
+   - Used by Program3 to store and print each car’s path.
+
+4. UserCar (extends Car)
+   - Implements move(Racetrack track) by attempting to move one row upward each turn.
+   - Checks for:
+       ~ Out-of-bounds movement -> collision
+       ~ Walls ('X') -> collision
+       ~ Other cars (any character that is not 'T', 'F', or 'X') -> collision
+       ~ Finish line ('F') -> car becomes a winner
+   - On successful movement, calls updateCarInfo().
+
+5. SportsCar (extends Car)
+   - Attempts to move two rows upward each turn.
+   - If two rows up is beyond the top of the track, it falls back to one row up.
+   - Uses the same collision checks as UserCar.
+   - Moves faster and therefore is more likely to crash into obstacles.
+
+6. AgileCar (extends Car)
+   - Tries up-right, up-left, and then straight up in a shuffled order.
+   - Skips any move that goes out of bounds, hits a wall, or would collide with another car.
+   - If all three candidate moves are blocked, it calls carCollision(), which counts as not moving this turn.
+   - If it reaches 'F', it sets the winner flag and moves to the finish.
+
+7. Program3 (driver)
+   - Creates a Racetrack and displays the banner.
+   - Instantiates three cars:
+       ~ UserCar 'U'
+       ~ SportsCar 'S'
+       ~ AgileCar 'A'
+   - Places the cars on valid starting positions on the track and calls setCarMove() so their IDs appear.
+   - Creates an ArrayList<Position> for each car to record their path.
+   - Runs a loop of rounds:
+       ~ For each car, records its previous row and column.
+       ~ Calls move(track), which performs the logic described above.
+       ~ If the car's position changed, appends a new Position to that car's path.
+       ~ If a car sets its winner flag, the loop stops.
+   - After the race:
+       ~ If there is a winner, the program builds a copy of the racetrack and overlays the winner’s path with '*' characters.
+       ~ The winner’s final position is marked with its ID character.
+       ~ The final track with path is printed to the console.
+
+Collision Behavior:
+- Cars never move into walls or onto other cars.
+- On a collision, carCollision() runs and the car stays at its old position (it “lands” back where it came from).
+- Only valid moves call updateCarInfo(), which moves the car and updates the track.
+
+Winning Path:
+- Program3 tracks each car's path using Position objects stored in ArrayLists.
+- At the end, only the winning car's path is used to draw '*' marks on the track.
+- This satisfies the requirement that the winning car's path is displayed on the racetrack.
+
+
